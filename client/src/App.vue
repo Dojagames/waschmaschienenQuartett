@@ -1,4 +1,6 @@
 <script>
+import Gdata from "./assets/deck.json";
+
 export default {
 
     data(){
@@ -6,6 +8,8 @@ export default {
             view: 'home',
 
             deck: [],
+            secondaryDeck: [],
+            data: Gdata,
 
             currentCard: {name: "name", cost: "400", efficiecy: 'A', u: 1300, modes: 15, rating: 4.9, noise: 80},
         }
@@ -23,7 +27,7 @@ export default {
         
     },
     mounted(){
-        
+        console.log(this.data);
     },
     watch: {
         
