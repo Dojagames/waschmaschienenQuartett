@@ -9,19 +9,22 @@ const io = require('socket.io')(server, {
 
 
 io.on('connection', (socket)=> {
+    console.log(socket.id);
     socket.emit("test", "testmsg");
 
-    socket.on("play", index => {
-        console.log("server received", index);
-        const currentRoom = Array.from(socket.rooms)[1];
-        socket.to(currentRoom).emit("play", index);
-    });
+    deck = deck.sort((a,b) => 0.5 - Math.random);
 
-    socket.on("reset", () =>{
-        console.log("server received", "reset");
-        const currentRoom = Array.from(socket.rooms)[1];
-        socket.to(currentRoom).emit("reset");
-    })
+    // socket.on("play", index => {
+    //     console.log("server received", index);
+    //     const currentRoom = Array.from(socket.rooms)[1];
+    //     socket.to(currentRoom).emit("play", index);
+    // });
+
+    // socket.on("reset", () =>{
+    //     console.log("server received", "reset");
+    //     const currentRoom = Array.from(socket.rooms)[1];
+    //     socket.to(currentRoom).emit("reset");
+    // })
 
     socket.on("host", () =>{
         const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -75,6 +78,7 @@ io.on('connection', (socket)=> {
 
 
 let Rooms = [];
-
+let deck = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31];
+   
 
 server.listen(3008);

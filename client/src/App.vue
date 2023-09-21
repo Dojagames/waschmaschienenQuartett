@@ -9,13 +9,17 @@ export default {
 
     data(){
         return {
-            view: 'home1',
+            view: 'home',
 
             deck: [],
             secondaryDeck: [],
             data: Gdata,
 
             currentCard: Gdata[0],
+
+
+            lobbyfull: false,
+            room: "",
         }
     },
     components: {
@@ -28,11 +32,47 @@ export default {
         goHome(){
             this.view = 'home';
         },
+            HostRoom(){
+            socket.emit("host");
+            this.view = 'game';
+        },
+
+        JoinRoom(){
+            socket.emit("joinGame", this.room);
+            this.lobbyfull = true;
+        },
     },
     created() {
         socket.on("test", (msg) => {
-        console.log("received msg from server", msg)
-      });
+            console.log("received msg from server", msg)
+        });
+
+        socket.on("cantJoinFull", () => {
+            alert("cant join Room (Room full)");
+        });
+
+        socket.on("cantJoinNotFound", () => {
+            alert("cant join Room (Room not Found)");
+        });
+
+        socket.on('joined', () => {
+            this.view = 'game';
+        });
+
+        socket.on('createdRoom', (_room) => {
+        this.room = _room;
+        });
+
+        socket.on('userJoined', () => {
+            this.resetBoard();
+            this.lobbyfull = true;
+        });
+
+        socket.on('opponentLeft', () => {
+            this.resetBoard();
+            this.lobbyfull = false;
+        });
+
     },
     mounted(){
         console.log(this.data);
