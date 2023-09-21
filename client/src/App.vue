@@ -1,4 +1,8 @@
 <script>
+
+import {io} from 'socket.io-client'
+const socket = io('localhost:3008');
+
 import Gdata from "./assets/deck.json";
 
 export default {
@@ -26,7 +30,9 @@ export default {
         },
     },
     created() {
-        
+        socket.on("test", (msg) => {
+        console.log("received msg from server", msg)
+      });
     },
     mounted(){
         console.log(this.data);
