@@ -50,6 +50,13 @@ export default {
             console.log("received msg from server", msg)
         });
 
+        socket.on("deck", (_deck) => {
+            this.deck = _deck;
+        });
+
+
+
+
         socket.on("cantJoinFull", () => {
             alert("cant join Room (Room full)");
         });

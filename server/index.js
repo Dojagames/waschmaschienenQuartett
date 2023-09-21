@@ -60,10 +60,10 @@ io.on('connection', (socket)=> {
             console.log(deck1);
             console.log(deck2);
             socket.to(id).emit("userJoined");
-            socket.to(id).emit("deck", []);
+            socket.to(id).emit("deck", deck1);
 
             socket.emit("joined");
-            socket.emit("deck", []);
+            socket.emit("deck", deck2);
 
             Rooms.filter(e => e.name == id)[0].users.push(socket.id);
         } else {
