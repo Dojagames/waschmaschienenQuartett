@@ -5,13 +5,13 @@ export default {
 
     data(){
         return {
-            view: 'home',
+            view: 'home1',
 
             deck: [],
             secondaryDeck: [],
             data: Gdata,
 
-            currentCard: {name: "name", cost: "400", efficiecy: 'A', u: 1300, modes: 15, rating: 4.9, noise: 80},
+            currentCard: Gdata[0],
         }
     },
     components: {
@@ -21,7 +21,9 @@ export default {
         
     },
     methods: {
-        
+        goHome(){
+            this.view = 'home';
+        },
     },
     created() {
         
@@ -37,7 +39,7 @@ export default {
 </script>
 
 <template>
-  <div id="home" v-if="view != 'home'">
+  <div id="home" v-if="view == 'home'">
     <button>Host Game</button><br>
     <input type="text" placeholder="gameCode here"><br>
     <button>Join Game</button>
@@ -45,7 +47,7 @@ export default {
 
   <div id="ingame" v-else >
     <div id="ui">
-        <button>Home</button>
+        <button @click="goHome()">Home</button>
     </div>
     <div id="game" >
         <div id="player1" class="playerClass unmarkable">
@@ -60,19 +62,19 @@ export default {
                             <h3>Preis:</h3> <p>{{ currentCard.cost }}$</p>
                         </div>
                         <div class="statpair">
-                            <h3>Energieeffizienz:</h3> <p>A++</p>
+                            <h3>Energieeffizienz:</h3> <p>{{ currentCard.efficiecy }}</p>
                         </div>
                         <div class="statpair">
-                            <h3>U/min</h3> <p>1300</p>
+                            <h3>U/min:</h3> <p>{{ currentCard.u }}</p>
                         </div>
                         <div class="statpair">
-                            <h3>Programme</h3> <p>15</p>
+                            <h3>Programme:</h3> <p>{{ currentCard.modes }}</p>
                         </div>
                         <div class="statpair">
-                            <h3>Bewertung</h3> <p>4.9</p>
+                            <h3>Bewertung:</h3> <p>{{ currentCard.rating }}</p>
                         </div>
                         <div class="statpair">
-                            <h3>Lautstaerke</h3> <p>71Db</p>
+                            <h3>Lautstaerke:</h3> <p>{{ currentCard.noise }} dB</p>
                         </div>
                     </div>
 
@@ -161,6 +163,7 @@ export default {
         position: absolute;
         width: 100%;
         height: 100%;
+        z-index: 1;
     }
 
     #ui button{
@@ -202,7 +205,7 @@ export default {
         height: 80%;
         top: 10%;
 
-        background-color: rgba(102, 51, 153, 0.356);
+        /* background-color: rgba(102, 51, 153, 0.356); */
     }
 
     #player1{
