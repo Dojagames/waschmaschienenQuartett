@@ -32,7 +32,10 @@ export default {
         goHome(){
             this.view = 'home';
         },
-            HostRoom(){
+        CopyRoom(){
+            navigator.clipboard.writeText(this.room);
+        },
+        HostRoom(){
             socket.emit("host");
             this.view = 'game';
         },
@@ -86,14 +89,15 @@ export default {
 
 <template>
   <div id="home" v-if="view == 'home'">
-    <button>Host Game</button><br>
-    <input type="text" placeholder="gameCode here"><br>
-    <button>Join Game</button>
+    <button @click="HostRoom()">Host Game</button><br>
+    <input type="text" placeholder="gameCode here" v-model="room"><br>
+    <button @click="JoinRoom()">Join Game</button>
   </div>
 
   <div id="ingame" v-else >
     <div id="ui">
         <button @click="goHome()">Home</button>
+        <h3 style="position: absolute; right: 15px; top: 15px; margin: 0;" @click="CopyRoom();">room: {{ room }}</h3>
     </div>
     <div id="game" >
         <div id="player1" class="playerClass unmarkable">

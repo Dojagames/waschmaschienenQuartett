@@ -12,7 +12,6 @@ io.on('connection', (socket)=> {
     console.log(socket.id);
     socket.emit("test", "testmsg");
 
-    deck = deck.sort((a,b) => 0.5 - Math.random);
 
     // socket.on("play", index => {
     //     console.log("server received", index);
@@ -54,8 +53,18 @@ io.on('connection', (socket)=> {
 
             socket.join(id);
             console.log(socket.id + " joined: " + id);
+
+            let _deck = shuffle(deck);
+            const deck1 = _deck.splice(0, 16);
+            const deck2 = _deck;
+            console.log(deck1);
+            console.log(deck2);
             socket.to(id).emit("userJoined");
+            socket.to(id).emit("deck", []);
+
             socket.emit("joined");
+            socket.emit("deck", []);
+
             Rooms.filter(e => e.name == id)[0].users.push(socket.id);
         } else {
             socket.emit("cantJoinNotFound");
@@ -79,6 +88,13 @@ io.on('connection', (socket)=> {
 
 let Rooms = [];
 let deck = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31];
-   
+
+const shuffle = (array) => { 
+    for (let i = array.length - 1; i > 0; i--) { 
+      const j = Math.floor(Math.random() * (i + 1)); 
+      [array[i], array[j]] = [array[j], array[i]]; 
+    } 
+    return array; 
+  };    
 
 server.listen(3008);
