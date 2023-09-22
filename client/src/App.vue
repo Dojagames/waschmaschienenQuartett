@@ -1,4 +1,10 @@
 <script>
+// TODOs:
+// Deck View Menu
+// Animations
+// Reset Game
+// Insert Waschmaschienen
+// 
 
 import {io} from 'socket.io-client'
 const socket = io('localhost:3008');
@@ -15,11 +21,15 @@ export default {
             secondaryDeck: [],
             data: Gdata,
 
-            currentCard: Gdata[0],
+            currentCard: {},
+            currentCardIndex: 0,
 
+            turn: false,
 
             lobbyfull: false,
             room: "",
+
+            showOpponentCard: false,
         }
     },
     components: {
@@ -43,6 +53,37 @@ export default {
         JoinRoom(){
             socket.emit("joinGame", this.room);
             this.lobbyfull = true;
+            this.turn = true;
+        },
+
+        ResetGame(){
+            alert("game over");
+        },
+
+        nextTurn(){
+            if(this.deck.length == 0){
+                if(this.secondaryDeck.length > 0) {
+                    //shuffle deck
+                    this.deck = [... this.secondaryDeck];
+                    this.secondaryDeck = [];
+                } else {
+                    socket.emit("gameLost");
+                    //show lose popup
+                    this.ResetGame();
+                    return
+                }
+            }
+
+            this.currentCard = Gdata[this.deck[0]];
+            this.currentCardIndex = this.deck[0];
+        },
+
+        //game functions
+
+        PlayCard(_type){
+            console.log("played: " + _type)
+            socket.emit("playCard", {type: _type, index: this.currentCardIndex});
+            this.turn = false;
         },
     },
     created() {
@@ -52,9 +93,70 @@ export default {
 
         socket.on("deck", (_deck) => {
             this.deck = _deck;
+            this.currentCard = Gdata[_deck[0]];
+            this.currentCardIndex = _deck[0];
+
+            this.secondaryDeck = [];
+        });
+
+        //own turn
+        socket.on("getCurrentCardValue", (_obj) => {
+            console.log(this.currentCard[_obj.type] == Gdata[_obj.index][_obj.type]);
+            if(this.currentCard[_obj.type] > Gdata[_obj.index][_obj.type]){
+                socket.emit("compareCard", {win: 1});
+            } else if(this.currentCard[_obj.type] == Gdata[_obj.index][_obj.type]){
+                socket.emit("compareCard", {win: 0});
+                this.secondaryDeck.push(this.deck[0]);
+                this.deck.shift();
+                this.nextTurn();
+            } else{
+                socket.emit("compareCard", {win: -1, index: this.currentCardIndex});
+                this.deck.shift();
+                this.nextTurn();
+            }
+
+            //show card of opponent -> play animation || wait... turn card back 
+        });
+
+        socket.on("getCard", (_index) => {
+            this.secondaryDeck.push(this.deck[0]);
+            this.deck.shift();
+            this.secondaryDeck.push(_index);
+
+            this.turn = true;
+            this.nextTurn();
+        })
+
+
+
+
+
+
+        //opponent turn
+        socket.on("drawCard", () => {
+            this.secondaryDeck.push(this.deck[0]);
+            this.deck.shift();
+            this.turn = true;
+
+            this.nextTurn();
+
+            //show card of opponent -> play animation || wait... turn card back 
+        });
+
+        socket.on("loseCard", () => {
+            socket.emit("giveCard", this.deck[0]);
+            this.deck.shift();
+            this.nextTurn();
+
+            //show card of opponent -> play animation || wait... turn card back 
         });
 
 
+
+        socket.on("gameWon", () => {
+            //show win popup;
+            this.ResetGame;
+        });
 
 
         socket.on("cantJoinFull", () => {
@@ -74,12 +176,12 @@ export default {
         });
 
         socket.on('userJoined', () => {
-            this.resetBoard();
+            //this.resetBoard();
             this.lobbyfull = true;
         });
 
         socket.on('opponentLeft', () => {
-            this.resetBoard();
+            this.ResetGame();
             this.lobbyfull = false;
         });
 
@@ -102,35 +204,35 @@ export default {
   </div>
 
   <div id="ingame" v-else >
-    <div id="ui">
-        <button @click="goHome()">Home</button>
-        <h3 style="position: absolute; right: 15px; top: 15px; margin: 0;" @click="CopyRoom();">room: {{ room }}</h3>
-    </div>
     <div id="game" >
+        <h4 id='waitingLabel' v-if="!turn">waiting for opponent</h4>
+        <button id='homeBtn' @click="goHome()">Home</button>
+        <h3 style="position: absolute; right: 15px; top: 15px; margin: 0;" @click="CopyRoom();" class="clickable">room: {{ room }}</h3>
+        
         <div id="player1" class="playerClass unmarkable">
             <h1>You</h1>
             <div class="middleDeck">
-                <h3>32 Cards </h3>
+                <h3>{{deck.length + secondaryDeck.length}} cards</h3>
                 <div class="card">
                     <h2>{{ currentCard.name }}</h2>
                     <img>
                     <div class="stats">
-                        <div class="statpair">
+                        <div class="statpair" @click="PlayCard('cost')">
                             <h3>Preis:</h3> <p>{{ currentCard.cost }}$</p>
                         </div>
-                        <div class="statpair">
+                        <div class="statpair" @click="PlayCard('efficiecy')">
                             <h3>Energieeffizienz:</h3> <p>{{ currentCard.efficiecy }}</p>
                         </div>
-                        <div class="statpair">
+                        <div class="statpair" @click="PlayCard('u')">
                             <h3>U/min:</h3> <p>{{ currentCard.u }}</p>
                         </div>
-                        <div class="statpair">
+                        <div class="statpair" @click="PlayCard('modes')">
                             <h3>Programme:</h3> <p>{{ currentCard.modes }}</p>
                         </div>
-                        <div class="statpair">
+                        <div class="statpair" @click="PlayCard('rating')">
                             <h3>Bewertung:</h3> <p>{{ currentCard.rating }}</p>
                         </div>
-                        <div class="statpair">
+                        <div class="statpair" @click="PlayCard('noise')">
                             <h3>Lautstaerke:</h3> <p>{{ currentCard.noise }} dB</p>
                         </div>
                     </div>
@@ -142,8 +244,8 @@ export default {
         <div id="player2" class="playerClass unmarkable">
             <h1>Opponent</h1>
             <div class="middleDeck">
-                <h3>32 Cards </h3>
-                <div class="card">
+                <h3>{{ 32 - (deck.length + secondaryDeck.length)}} cards</h3>
+                <div class="card" v-if="showOpponentCard">
                     <h2>Name</h2>
                     <img>
                     <div class="stats">
@@ -166,7 +268,9 @@ export default {
                             <h3>Lautstaerke</h3> <p>71Db</p>
                         </div>
                     </div>
-
+                </div>
+                <div class="card" v-else>
+                    <h1 style="transform: rotate(-45deg) translate(-50%, -50%); position: relative; left: 40%;top: 15%;">Deck</h1>
                 </div>
                 
             </div>
@@ -216,25 +320,29 @@ export default {
 
 
     /* game */
-    #ui{
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        z-index: 1;
-    }
 
-    #ui button{
+
+    #homeBtn{
         background-color: transparent;
         border: 1px solid white;
         border-radius: 4px;
 
-        margin: 15px;
+        position: absolute;
+        left: 15px;
+        bottom: 15px;
 
         font-size: larger;
     }
 
-    #ui button:hover{
+    #homeBtn:hover{
         cursor: pointer;
+    }
+
+    #waitingLabel{
+        position: absolute;
+        left: 15px;
+        top: 15px;
+        margin: 0;
     }
 
 

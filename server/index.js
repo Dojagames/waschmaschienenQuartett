@@ -1,3 +1,6 @@
+//import fullDeck from './deck.json';
+const fullDeck = require('./deck.json');
+
 const server = require('http').createServer();
 const io = require('socket.io')(server, {
     cors: {
@@ -12,7 +15,46 @@ io.on('connection', (socket)=> {
     console.log(socket.id);
     socket.emit("test", "testmsg");
 
+    socket.on('playCard', (_obj) => {
+        const currentRoom = Array.from(socket.rooms)[1];
+        socket.to(currentRoom).emit("getCurrentCardValue", (_obj));
+    });
 
+    socket.on("compareCard", (_obj) => {
+        //put win / lose / draw in one call as obj?
+        //put opposing index in answer for animation;
+
+        const currentRoom = Array.from(socket.rooms)[1];
+        if(_obj.win == 1){
+            socket.to(currentRoom).emit("loseCard");
+        } else if(_obj.win == 0){
+            socket.to(currentRoom).emit("drawCard");
+        } else {
+            socket.to(currentRoom).emit("getCard", _obj.index);
+        }
+
+        //get index from opponent -> show card of enemy -> animation
+        console.log("round over");
+    });
+
+    socket.on("giveCard", (_index) => {
+        const currentRoom = Array.from(socket.rooms)[1];
+        socket.to(currentRoom).emit("getCard", _index);  
+    })
+
+
+    socket.on("gameLost", () => {
+        const currentRoom = Array.from(socket.rooms)[1];
+        socket.to(currentRoom).emit("gameWon");  
+
+        let _deck = shuffle([...deck]);
+        const deck1 = _deck.splice(0, 16);
+        const deck2 = _deck;
+
+        socket.to(currentRoom).emit("deck", deck1);
+        socket.emit("deck", deck2);
+
+    });
     // socket.on("play", index => {
     //     console.log("server received", index);
     //     const currentRoom = Array.from(socket.rooms)[1];
@@ -54,7 +96,7 @@ io.on('connection', (socket)=> {
             socket.join(id);
             console.log(socket.id + " joined: " + id);
 
-            let _deck = shuffle(deck);
+            let _deck = shuffle([...deck]);
             const deck1 = _deck.splice(0, 16);
             const deck2 = _deck;
             console.log(deck1);
