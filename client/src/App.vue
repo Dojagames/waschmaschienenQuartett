@@ -83,7 +83,7 @@ export default {
 
         PlayCard(_type){
             if(!this.turn) return;
-            console.log("played: " + _type)
+            console.log("played: " + _type);
             socket.emit("playCard", {type: _type, index: this.currentCardIndex});
             this.turn = false;
         },
@@ -94,7 +94,7 @@ export default {
 
         getImg(_index){
             const _id = String.fromCharCode(97 + Math.floor(_index/4)) + String((_index % 4) + 1);
-            const url = "/imgs/" + _id + ".webp";           
+            const url = "/imgs/" + _id + ".webp";
             return url;
         },
 

@@ -34,6 +34,7 @@ io.on('connection', (socket)=> {
                 givingPile = Rooms.filter(e => e.name == currentRoom)[0].pile;
                 givingPile.push(_opponentIndex);
                 socket.emit("wonCard", givingPile);
+                Rooms.filter(e => e.name == currentRoom)[0].pile = [];
             } else {
                 socket.emit("wonCard", [_opponentIndex]);
             }
@@ -41,13 +42,14 @@ io.on('connection', (socket)=> {
             socket.to(currentRoom).emit("lostCard");
         } else if(fullDeck[_ownIndex][_type] == fullDeck[_opponentIndex][_type]){
             Rooms.filter(e => e.name == currentRoom)[0].pile.push(_ownIndex, _opponentIndex);
-            socket.to(currentRoom).emit("drawCard", true);
-            socket.emit("drawCard", false);
+            socket.to(currentRoom).emit("drawCard", false);
+            socket.emit("drawCard", true);
         } else {
             if(Rooms.filter(e => e.name == currentRoom)[0].pile.length > 0){
                 givingPile = Rooms.filter(e => e.name == currentRoom)[0].pile;
                 givingPile.push(_opponentIndex);
                 socket.to(currentRoom).emit("wonCard", givingPile);
+                Rooms.filter(e => e.name == currentRoom)[0].pile = [];
             } else {
                 socket.to(currentRoom).emit("wonCard", [_opponentIndex]);
             }
