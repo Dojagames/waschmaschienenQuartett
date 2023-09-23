@@ -82,6 +82,7 @@ export default {
         //game functions
 
         PlayCard(_type){
+            if(!this.turn) return;
             console.log("played: " + _type)
             socket.emit("playCard", {type: _type, index: this.currentCardIndex});
             this.turn = false;
