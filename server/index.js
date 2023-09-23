@@ -16,31 +16,46 @@ io.on('connection', (socket)=> {
     socket.emit("test", "testmsg");
 
     socket.on('playCard', (_obj) => {
+        //ask for other client card
         const currentRoom = Array.from(socket.rooms)[1];
-        socket.to(currentRoom).emit("getCurrentCardValue", (_obj));
+        socket.to(currentRoom).emit("getCard", (_obj));  
     });
 
-    socket.on("compareCard", (_obj) => {
-        //put win / lose / draw in one call as obj?
-        //put opposing index in answer for animation;
-
+    socket.on("compareCards", (_obj) => {
         const currentRoom = Array.from(socket.rooms)[1];
-        if(_obj.win == 1){
-            socket.to(currentRoom).emit("loseCard");
-        } else if(_obj.win == 0){
-            socket.to(currentRoom).emit("drawCard");
+
+        const _type = _obj.opponent.type;
+        const _ownIndex = _obj.own;
+        const _opponentIndex = _obj.opponent.index;
+
+        if(fullDeck[_ownIndex][_type] > fullDeck[_opponentIndex][_type]){
+            let givingPile = [];
+            if(Rooms.filter(e => e.name == currentRoom)[0].pile.length > 0){
+                givingPile = Rooms.filter(e => e.name == currentRoom)[0].pile;
+                givingPile.push(_opponentIndex);
+                socket.emit("wonCard", givingPile);
+            } else {
+                socket.emit("wonCard", [_opponentIndex]);
+            }
+            
+            socket.to(currentRoom).emit("lostCard");
+        } else if(fullDeck[_ownIndex][_type] == fullDeck[_opponentIndex][_type]){
+            Rooms.filter(e => e.name == currentRoom)[0].pile.push(_ownIndex, _opponentIndex);
+            socket.to(currentRoom).emit("drawCard", true);
+            socket.emit("drawCard", false);
         } else {
-            socket.to(currentRoom).emit("getCard", _obj.index);
+            if(Rooms.filter(e => e.name == currentRoom)[0].pile.length > 0){
+                givingPile = Rooms.filter(e => e.name == currentRoom)[0].pile;
+                givingPile.push(_opponentIndex);
+                socket.to(currentRoom).emit("wonCard", givingPile);
+            } else {
+                socket.to(currentRoom).emit("wonCard", [_opponentIndex]);
+            }
+            
+            socket.emit("lostCard");
         }
-
-        //get index from opponent -> show card of enemy -> animation
-        console.log("round over");
     });
 
-    socket.on("giveCard", (_index) => {
-        const currentRoom = Array.from(socket.rooms)[1];
-        socket.to(currentRoom).emit("getCard", _index);  
-    })
 
 
     socket.on("gameLost", () => {
@@ -55,17 +70,7 @@ io.on('connection', (socket)=> {
         socket.emit("deck", deck2);
 
     });
-    // socket.on("play", index => {
-    //     console.log("server received", index);
-    //     const currentRoom = Array.from(socket.rooms)[1];
-    //     socket.to(currentRoom).emit("play", index);
-    // });
 
-    // socket.on("reset", () =>{
-    //     console.log("server received", "reset");
-    //     const currentRoom = Array.from(socket.rooms)[1];
-    //     socket.to(currentRoom).emit("reset");
-    // })
 
     socket.on("host", () =>{
         const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -78,7 +83,7 @@ io.on('connection', (socket)=> {
         } while (Rooms.filter(e => e.name == _room).length != 0); // rooms.includes(_room)
 
         
-        Rooms.push({name: _room, users: [socket.id]});
+        Rooms.push({name: _room, users: [socket.id], pile: []});
         socket.join(_room);
         console.log(socket.id + " created: " + _room);
 

@@ -16,7 +16,6 @@ export default {
     data(){
         return {
             view: 'home',
-
             deck: [],
             secondaryDeck: [],
             data: Gdata,
@@ -30,6 +29,8 @@ export default {
             room: "",
 
             showOpponentCard: false,
+
+            lobbyfull: false,
         }
     },
     components: {
@@ -85,6 +86,11 @@ export default {
             socket.emit("playCard", {type: _type, index: this.currentCardIndex});
             this.turn = false;
         },
+
+        GetCardID(_index){
+            return String.fromCharCode(65 + Math.floor(_index/4)) + String((_index % 4) + 1)
+        },
+
     },
     created() {
         socket.on("test", (msg) => {
@@ -99,59 +105,37 @@ export default {
             this.secondaryDeck = [];
         });
 
-        //own turn
-        socket.on("getCurrentCardValue", (_obj) => {
-            console.log(this.currentCard[_obj.type] == Gdata[_obj.index][_obj.type]);
-            if(this.currentCard[_obj.type] > Gdata[_obj.index][_obj.type]){
-                socket.emit("compareCard", {win: 1});
-            } else if(this.currentCard[_obj.type] == Gdata[_obj.index][_obj.type]){
-                socket.emit("compareCard", {win: 0});
-                this.secondaryDeck.push(this.deck[0]);
-                this.deck.shift();
-                this.nextTurn();
-                //show card of opponent -> play animation || wait... turn card back
-            } else{
-                socket.emit("compareCard", {win: -1, index: this.currentCardIndex});
-                this.deck.shift();
-                this.nextTurn();
-                //show card of opponent -> play animation || wait... turn card back
-            }
-
-             
+        socket.on("getCard", (opponentCard) => {
+            socket.emit("compareCards", {own: this.currentCardIndex, opponent: opponentCard});
         });
 
-        socket.on("getCard", (_index) => {
+
+        socket.on("wonCard", (_cards) => {
+            //puts frontCard to secondary deck
             this.secondaryDeck.push(this.deck[0]);
             this.deck.shift();
-            this.secondaryDeck.push(_index);
+
+            _cards.forEach((e) => {
+                this.secondaryDeck.push(e);
+            });
 
             this.turn = true;
             this.nextTurn();
-            //show card of opponent -> play animation || wait... turn card back
-        })
-
-
-
-
-
-
-        //opponent turn
-        socket.on("drawCard", () => {
-            this.secondaryDeck.push(this.deck[0]);
-            this.deck.shift();
-            this.turn = true;
-
-            this.nextTurn();
-
-            //show card of opponent -> play animation || wait... turn card back 
         });
 
-        socket.on("loseCard", () => {
-            socket.emit("giveCard", this.deck[0]);
+
+        socket.on("lostCard", () => {
             this.deck.shift();
             this.nextTurn();
+            this.turn = false;
+        });
 
-            //show card of opponent -> play animation || wait... turn card back 
+
+        socket.on("drawCard", (_turn) => {
+            this.deck.shift();
+
+            this.nextTurn();
+            this.turn = _turn;
         });
 
 
@@ -239,7 +223,7 @@ export default {
                             <h3>Lautstaerke:</h3> <p>{{ currentCard.noise }} dB</p>
                         </div>
                     </div>
-
+                    <div class="cardId">{{ GetCardID(currentCardIndex) }}</div>
                 </div>
             </div>
         </div>
