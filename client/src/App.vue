@@ -109,13 +109,15 @@ export default {
                 this.secondaryDeck.push(this.deck[0]);
                 this.deck.shift();
                 this.nextTurn();
+                //show card of opponent -> play animation || wait... turn card back
             } else{
                 socket.emit("compareCard", {win: -1, index: this.currentCardIndex});
                 this.deck.shift();
                 this.nextTurn();
+                //show card of opponent -> play animation || wait... turn card back
             }
 
-            //show card of opponent -> play animation || wait... turn card back 
+             
         });
 
         socket.on("getCard", (_index) => {
@@ -125,6 +127,7 @@ export default {
 
             this.turn = true;
             this.nextTurn();
+            //show card of opponent -> play animation || wait... turn card back
         })
 
 
