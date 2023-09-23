@@ -4,7 +4,6 @@
 // Animations
 // Reset Game
 // Insert Waschmaschienen
-// 
 
 import {io} from 'socket.io-client'
 const socket = io('localhost:3008');
@@ -58,18 +57,19 @@ export default {
         },
 
         ResetGame(){
-            alert("game over");
+           //reset board;
         },
 
         nextTurn(){
             if(this.deck.length == 0){
                 if(this.secondaryDeck.length > 0) {
                     //shuffle deck
-                    this.deck = [... this.secondaryDeck];
+                    this.deck = [... this.secondaryDeck].sort((a,b) => 0.5 - Math.random());
+                    this.deck;
                     this.secondaryDeck = [];
                 } else {
                     socket.emit("gameLost");
-                    //show lose popup
+                    alert("gameLost");
                     this.ResetGame();
                     return
                 }
@@ -91,11 +91,14 @@ export default {
             return String.fromCharCode(65 + Math.floor(_index/4)) + String((_index % 4) + 1)
         },
 
+        getImg(_index){
+            const _id = String.fromCharCode(97 + Math.floor(_index/4)) + String((_index % 4) + 1);
+            const url = "/imgs/" + _id + ".webp";           
+            return url;
+        },
+
     },
     created() {
-        socket.on("test", (msg) => {
-            console.log("received msg from server", msg)
-        });
 
         socket.on("deck", (_deck) => {
             this.deck = _deck;
@@ -141,7 +144,7 @@ export default {
 
 
         socket.on("gameWon", () => {
-            //show win popup;
+            alert("game Won");
             this.ResetGame;
         });
 
@@ -201,8 +204,9 @@ export default {
             <div class="middleDeck">
                 <h3>{{deck.length + secondaryDeck.length}} cards</h3>
                 <div class="card">
+                    <div class="cardId">{{ GetCardID(currentCardIndex) }}</div>
                     <h2>{{ currentCard.name }}</h2>
-                    <img>
+                    <img :src="getImg(currentCardIndex)" style="object-fit: cover;">
                     <div class="stats">
                         <div class="statpair" @click="PlayCard('cost')">
                             <h3>Preis:</h3> <p>{{ currentCard.cost }}$</p>
@@ -210,20 +214,19 @@ export default {
                         <div class="statpair" @click="PlayCard('efficiecy')">
                             <h3>Energieeffizienz:</h3> <p>{{ currentCard.efficiecy }}</p>
                         </div>
-                        <div class="statpair" @click="PlayCard('u')">
-                            <h3>U/min:</h3> <p>{{ currentCard.u }}</p>
+                        <div class="statpair" @click="PlayCard('water')">
+                            <h3>Wasser pro Zyklus:</h3> <p>{{ currentCard.water }} l</p>
                         </div>
                         <div class="statpair" @click="PlayCard('modes')">
                             <h3>Programme:</h3> <p>{{ currentCard.modes }}</p>
                         </div>
-                        <div class="statpair" @click="PlayCard('rating')">
-                            <h3>Bewertung:</h3> <p>{{ currentCard.rating }}</p>
+                        <div class="statpair" @click="PlayCard('weightload')">
+                            <h3>Maximalbelastung:</h3> <p>{{ currentCard.weightload }} kg</p>
                         </div>
                         <div class="statpair" @click="PlayCard('noise')">
                             <h3>Lautstaerke:</h3> <p>{{ currentCard.noise }} dB</p>
                         </div>
                     </div>
-                    <div class="cardId">{{ GetCardID(currentCardIndex) }}</div>
                 </div>
             </div>
         </div>
@@ -409,7 +412,7 @@ export default {
         transform: translateX(-50%);
 
         width: 480px;
-        height: 600px;
+        height: 630px;
 
         border: 2px solid maroon;
         border-radius: 8px;
@@ -421,11 +424,18 @@ export default {
         padding: 10px;
     }
 
+    .cardId {
+        margin-left: 15px;
+        margin-top: 5px;
+    }
+
     .card img{
-        width: 80%;
-        height: 40%;
+        width: 60%;
+        height: 50%;
         position: relative;
-        left: 10%;
+        left: 20%;
+
+        object-fit: cover;
     }
 
     .stats{
