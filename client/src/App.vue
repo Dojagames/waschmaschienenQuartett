@@ -28,8 +28,6 @@ export default {
             room: "",
 
             showOpponentCard: false,
-
-            lobbyfull: false,
         }
     },
     components: {
