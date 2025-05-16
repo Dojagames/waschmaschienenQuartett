@@ -9,9 +9,9 @@ Dieses Projekt ist ein Web-basiertes Quartettspiel, bei dem Waschmaschinen in Ka
 ## 🚀 Features
 
 - Moderne Single-Page-Anwendung mit Vue.js
-- RESTful API mit Node.js für Datenmanagement
-- Responsive Design für verschiedene Bildschirmgrößen
-- Humorvolle Darstellung alltäglicher Haushaltsgeräte
+- Gamelogic im Backend mit Node.js
+- Nutzt JSON file als Deck -> Seasonpass incoming?
+- Einfach Quartett Junge!!!!
 
 ## 📖 Backstory
 
